@@ -114,7 +114,7 @@
     display: block;
   }
 
-  /* MAIN APP (same as before but with save functionality) */
+  /* MAIN APP */
   #app {
     display: none;
   }
@@ -123,11 +123,6 @@
     display: block;
   }
 
-  /* Copy all styles from streamplan-bold.html */
-</style>
-
-<!-- Include all the CSS from the original streamplan-bold.html here -->
-<style>
   @keyframes float {
     0%, 100% { transform: translateY(0px) rotate(0deg); }
     25% { transform: translateY(-10px) rotate(2deg); }
@@ -458,7 +453,6 @@
     animation: slideInRight 0.8s ease 1.4s backwards;
   }
 
-  /* Control Button & Panel - Same styles as before */
   .control-btn {
     position: fixed;
     top: 30px;
@@ -632,6 +626,50 @@
     background: rgba(255,255,255,0.25);
   }
 
+  /* DANGER ZONE - fehlende Styles hinzugefügt */
+  .danger-zone {
+    background: rgba(255, 0, 0, 0.08);
+    border: 3px solid rgba(255, 50, 50, 0.5);
+    border-radius: 20px;
+    padding: 25px;
+  }
+
+  .danger-warning {
+    font-family: 'Bangers', cursive;
+    font-size: 1.5rem;
+    color: #ff4444;
+    text-align: center;
+    letter-spacing: 3px;
+    margin-bottom: 8px;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  .danger-text {
+    color: rgba(255,255,255,0.5);
+    font-size: 0.9rem;
+    text-align: center;
+    margin-bottom: 15px;
+  }
+
+  .btn-danger {
+    background: linear-gradient(135deg, #ff0000, #cc0000);
+    box-shadow: 0 8px 0px rgba(100,0,0,0.4), 0 15px 30px rgba(255,0,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    letter-spacing: 2px;
+  }
+
+  .btn-danger:hover {
+    background: linear-gradient(135deg, #ff3333, #ff0000);
+    box-shadow: 0 12px 0px rgba(100,0,0,0.4), 0 20px 40px rgba(255,0,0,0.5);
+  }
+
+  .btn-danger-icon {
+    font-size: 1.3rem;
+  }
+
   .day-editor {
     background: rgba(255,255,255,0.05);
     border: 2px solid rgba(255,255,255,0.15);
@@ -658,7 +696,6 @@
   ::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
   ::-webkit-scrollbar-thumb { background: var(--fire); border-radius: 5px; }
 
-  /* Save Button - Special */
   .btn-save {
     background: linear-gradient(135deg, #00c853, #00e676);
     position: sticky;
@@ -707,143 +744,100 @@
 
 <!-- MAIN APP -->
 <div id="app">
-<div class="bg-shapes">
-  <div class="shape"></div>
-  <div class="shape"></div>
-  <div class="shape"></div>
-  <div class="shape"></div>
-  <div class="shape"></div>
+  <div class="bg-shapes">
+    <div class="shape"></div>
+    <div class="shape"></div>
+    <div class="shape"></div>
+    <div class="shape"></div>
+    <div class="shape"></div>
+  </div>
+
+  <div class="bg-custom" id="bgCustom"></div>
+
+  <div class="container">
+    <div class="header">
+      <div class="avatar-container">
+        <div class="avatar-glow"></div>
+        <!-- FIX: alt-Text hinzugefügt für Barrierefreiheit -->
+        <img class="avatar" id="avatar" src="" alt="Avatar">
+      </div>
+      <div class="title-area">
+        <div class="date-badge" id="dateRange">--.--.--</div>
+        <div class="main-title">STREAMPLAN</div>
+        <!-- FIX: Tippfehler "FEBUAR" → "FEBRUAR" korrigiert (wird per JS gesetzt) -->
+        <div class="month-badge" id="monthBadge">FEBRUAR 2026</div>
+      </div>
+      <div></div>
+    </div>
+
+    <div class="schedule" id="schedule"></div>
+
+    <div class="footer">
+      <div class="footer-box footer-left" id="footerLeft"></div>
+      <div class="footer-box footer-right" id="footerRight"></div>
+    </div>
+
+    <div class="disclaimer">Diese Angaben sind ohne Gewähr ⚡</div>
+  </div>
+
+  <button class="control-btn" onclick="togglePanel()">⚙️</button>
+
+  <div class="panel" id="panel">
+    <div class="panel-title">ADMIN PANEL</div>
+
+    <div class="section">
+      <h3>🎨 Hintergrund</h3>
+      <div class="upload-zone" onclick="document.getElementById('bgUpload').click()">
+        <input type="file" id="bgUpload" accept="image/*" onchange="uploadBg(event)">
+        <div class="upload-icon">🖼️</div>
+        <div>Bild hochladen</div>
+      </div>
+      <div class="preview" id="bgPreview"></div>
+      <button class="btn btn-secondary" onclick="removeBg()">Entfernen</button>
+    </div>
+
+    <div class="section">
+      <h3>👤 Avatar</h3>
+      <div class="upload-zone" onclick="document.getElementById('avatarUpload').click()">
+        <input type="file" id="avatarUpload" accept="image/*" onchange="uploadAvatar(event)">
+        <div class="upload-icon">📸</div>
+        <div>Avatar hochladen</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>📝 Texte</h3>
+      <div class="form-group">
+        <label>Footer Links</label>
+        <input type="text" id="footerLeftInput" oninput="updateTexts()">
+      </div>
+      <div class="form-group">
+        <label>Footer Rechts</label>
+        <input type="text" id="footerRightInput" oninput="updateTexts()">
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>🎮 Wochenplan</h3>
+      <div id="dayEditors"></div>
+    </div>
+
+    <div class="section danger-zone">
+      <div class="danger-warning">⚠️ ACHTUNG ⚠️</div>
+      <h3>💀 DANGER ZONE 💀</h3>
+      <div class="danger-text">Hier gibt es kein Zurück!</div>
+      <button class="btn btn-danger" onclick="clearAll()">
+        <span class="btn-danger-icon">💥</span>
+        ALLES VERNICHTEN
+        <span class="btn-danger-icon">💥</span>
+      </button>
+    </div>
+
+    <button class="btn btn-save" onclick="saveToServer()">💾 SPEICHERN</button>
+    <div class="save-status" id="saveStatus"></div>
+  </div>
 </div>
 
-<div class="bg-custom" id="bgCustom"></div>
-
-<div class="container">
-  <div class="header">
-    <div class="avatar-container">
-      <div class="avatar-glow"></div>
-      <img class="avatar" id="avatar" src="" alt="">
-    </div>
-    <div class="title-area">
-      <div class="date-badge" id="dateRange">09.02-15.02</div>
-      <div class="main-title">STREAMPLAN</div>
-      <div class="month-badge" id="monthBadge">FEBUAR 2026</div>
-    </div>
-    <div></div>
-  </div>
-
-  <div class="schedule" id="schedule"></div>
-
-  <div class="footer">
-    <div class="footer-box footer-left" id="footerLeft"></div>
-    <div class="footer-box footer-right" id="footerRight"></div>
-  </div>
-
-  <div class="disclaimer">Diese Angaben sind ohne Gewähr ⚡</div>
-</div>
-
-<button class="control-btn" onclick="togglePanel()">⚙️</button>
-
-<div class="panel" id="panel">
-  <div class="panel-title">ADMIN PANEL</div>
-
-  <div class="section">
-    <h3>🎨 Hintergrund</h3>
-    <div class="upload-zone" onclick="document.getElementById('bgUpload').click()">
-      <input type="file" id="bgUpload" accept="image/*" onchange="uploadBg(event)">
-      <div class="upload-icon">🖼️</div>
-      <div>Bild hochladen</div>
-    </div>
-    <div class="preview" id="bgPreview"></div>
-    <button class="btn btn-secondary" onclick="removeBg()">Entfernen</button>
-  </div>
-
-  <div class="section">
-    <h3>👤 Avatar</h3>
-    <div class="upload-zone" onclick="document.getElementById('avatarUpload').click()">
-      <input type="file" id="avatarUpload" accept="image/*" onchange="uploadAvatar(event)">
-      <div class="upload-icon">📸</div>
-      <div>Avatar hochladen</div>
-    </div>
-  </div>
-
-  <div class="section">
-    <h3>📝 Texte</h3>
-    <div class="form-group">
-      <label>Footer Links</label>
-      <input type="text" id="footerLeftInput" oninput="updateTexts()">
-    </div>
-    <div class="form-group">
-      <label>Footer Rechts</label>
-      <input type="text" id="footerRightInput" oninput="updateTexts()">
-    </div>
-  </div>
-
-  <div class="section">
-    <h3>🎮 Wochenplan</h3>
-    <div id="dayEditors"></div>
-  </div>
-
-<div class="section danger-zone">
-    <div class="danger-warning">⚠️ ACHTUNG ⚠️</div>
-    <h3>💀 DANGER ZONE 💀</h3>
-    <div class="danger-text">Hier gibt es kein zurück!</div>
-    <button class="btn btn-danger" onclick="clearAll()">
-      <span class="btn-danger-icon">💥</span>
-      ALLES VERNICHTEN
-      <span class="btn-danger-icon">💥</span>
-    </button>
-  </div>
-
-  <button class="btn btn-save" onclick="saveToServer()">💾 SPEICHERN</button>
-  <div class="save-status" id="saveStatus"></div>
-</div>
-  
-  function clearAll() {
-  console.log('clearAll function called!');
-  
-  if (!confirm('💀💀💀 WARNUNG 💀💀💀\n\n🚨 DU BIST DABEI ALLES ZU VERNICHTEN! 🚨\n\n💥 Hintergrundbild → GELÖSCHT\n💥 Avatar → WEG\n💥 Alle Streams → AUSRADIERT\n💥 Alle Texte → VERNICHTET\n\n⚠️ ES GIBT KEIN ZURÜCK! ⚠️\n\nWillst du wirklich fortfahren?')) {
-    return;
-  }
-  
-  if (!confirm('🔥 LETZTE WARNUNG! 🔥\n\nBist du dir ABSOLUT SICHER?\n\nDies ist deine letzte Chance!\n\nAlles wird UNWIDERRUFLICH gelöscht!')) {
-    return;
-  }
-  
-  // Reset state
-  state = {
-    bgImage: '',
-    avatar: '',
-    footerLeft: 'Besucht JETZT auch meine\nanderen Social-Media-Konten!!',
-    footerRight: 'MIT LIEBE\nGEMACHT\nFÜR EUCH\nVON PLÜSCHI',
-    days: [
-      { name: 'MO', stream: '', time: '', sleep: true },
-      { name: 'DI', stream: '', time: '', sleep: true },
-      { name: 'MI', stream: '', time: '', sleep: true },
-      { name: 'DO', stream: '', time: '', sleep: false },
-      { name: 'FR', stream: '', time: '', sleep: false },
-      { name: 'SA', stream: '', time: '', sleep: false },
-      { name: 'SO', stream: '', time: '', sleep: true }
-    ]
-  };
-  
-  // Clear visuals
-  document.getElementById('bgCustom').style.backgroundImage = '';
-  document.getElementById('bgCustom').classList.remove('active');
-  document.getElementById('bgPreview').style.backgroundImage = '';
-  document.getElementById('avatar').src = '';
-  document.getElementById('footerLeftInput').value = state.footerLeft.replace(/\n/g, ' ');
-  document.getElementById('footerRightInput').value = state.footerRight.replace(/\n/g, ' ');
-  
-  // Re-render
-  updateTexts();
-  renderSchedule();
-  renderDayEditors();
-  
-  // Save to server
-  saveToServer();
-  
-  alert('💥💥💥 KABOOM! 💥💥💥\n\n🔥 Alles wurde vernichtet! 🔥\n\nDer Streamplan ist nun leer wie das Weltall! 🌌');
-}
 <script>
 const API_URL = window.location.origin;
 let password = '';
@@ -854,34 +848,52 @@ const MONTHS = ['JANUAR', 'FEBRUAR', 'MÄRZ', 'APRIL', 'MAI', 'JUNI', 'JULI', 'A
 let state = {
   bgImage: '',
   avatar: '',
-  footerLeft: '',
-  footerRight: '',
-  days: []
+  footerLeft: 'Besucht JETZT auch meine\nanderen Social-Media-Konten!!',
+  footerRight: 'MIT LIEBE\nGEMACHT\nFÜR EUCH\nVON PLÜSCHI',
+  days: [
+    { name: 'MO', stream: '', time: '', sleep: true },
+    { name: 'DI', stream: '', time: '', sleep: true },
+    { name: 'MI', stream: '', time: '', sleep: true },
+    { name: 'DO', stream: '', time: '', sleep: false },
+    { name: 'FR', stream: '', time: '', sleep: false },
+    { name: 'SA', stream: '', time: '', sleep: false },
+    { name: 'SO', stream: '', time: '', sleep: true }
+  ]
 };
 
 // LOGIN
 async function login() {
   const input = document.getElementById('passwordInput').value;
-  
+
+  // FIX: Leeres Passwort abfangen
+  if (!input.trim()) {
+    document.getElementById('errorMsg').textContent = '❌ Bitte Passwort eingeben!';
+    document.getElementById('errorMsg').classList.add('show');
+    setTimeout(() => document.getElementById('errorMsg').classList.remove('show'), 3000);
+    return;
+  }
+
   try {
     const res = await fetch(`${API_URL}/api/verify`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password: input })
     });
-    
+
     const data = await res.json();
-    
+
     if (data.valid) {
       password = input;
       document.getElementById('loginScreen').classList.add('hidden');
       document.getElementById('app').classList.add('visible');
       await loadFromServer();
     } else {
+      document.getElementById('errorMsg').textContent = '❌ Falsches Passwort!';
       document.getElementById('errorMsg').classList.add('show');
-      setTimeout(() => {
-        document.getElementById('errorMsg').classList.remove('show');
-      }, 3000);
+      // FIX: Passwort-Feld bei falschem Passwort leeren
+      document.getElementById('passwordInput').value = '';
+      document.getElementById('passwordInput').focus();
+      setTimeout(() => document.getElementById('errorMsg').classList.remove('show'), 3000);
     }
   } catch (error) {
     alert('Verbindung zum Server fehlgeschlagen!');
@@ -892,8 +904,23 @@ async function login() {
 async function loadFromServer() {
   try {
     const res = await fetch(`${API_URL}/api/schedule`);
-    state = await res.json();
-    
+
+    // FIX: HTTP-Fehler prüfen (nicht nur fetch-Fehler)
+    if (!res.ok) {
+      throw new Error(`Server-Fehler: ${res.status}`);
+    }
+
+    const loaded = await res.json();
+
+    // FIX: Sicherstellen dass alle Felder vorhanden sind (Merge mit defaults)
+    state = {
+      bgImage: loaded.bgImage || '',
+      avatar: loaded.avatar || '',
+      footerLeft: loaded.footerLeft || state.footerLeft,
+      footerRight: loaded.footerRight || state.footerRight,
+      days: loaded.days && loaded.days.length === 7 ? loaded.days : state.days
+    };
+
     document.getElementById('footerLeftInput').value = state.footerLeft.replace(/\n/g, ' ');
     document.getElementById('footerRightInput').value = state.footerRight.replace(/\n/g, ' ');
 
@@ -912,7 +939,13 @@ async function loadFromServer() {
     renderDayEditors();
     updateTexts();
   } catch (error) {
-    alert('Fehler beim Laden der Daten!');
+    console.error('Ladefehler:', error);
+    // FIX: Trotzdem rendern, damit die Seite nicht leer bleibt
+    updateDateRange();
+    renderSchedule();
+    renderDayEditors();
+    updateTexts();
+    alert('Fehler beim Laden der Daten! Standard-Ansicht wird verwendet.');
   }
 }
 
@@ -922,25 +955,28 @@ async function saveToServer() {
   statusEl.className = 'save-status';
   statusEl.textContent = '⏳ Wird gespeichert...';
   statusEl.style.display = 'block';
-  
+
   try {
     const res = await fetch(`${API_URL}/api/schedule`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password, data: state })
     });
-    
+
     if (res.ok) {
       statusEl.className = 'save-status success';
       statusEl.textContent = '✅ Erfolgreich gespeichert!';
     } else {
-      throw new Error('Save failed');
+      // FIX: Unterschied zwischen Auth-Fehler und anderem Fehler
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.message || `HTTP ${res.status}`);
     }
   } catch (error) {
+    console.error('Speicherfehler:', error);
     statusEl.className = 'save-status error';
     statusEl.textContent = '❌ Fehler beim Speichern!';
   }
-  
+
   setTimeout(() => {
     statusEl.style.display = 'none';
   }, 3000);
@@ -950,21 +986,23 @@ function updateDateRange() {
   const today = new Date();
   const monday = new Date(today);
   const day = monday.getDay();
-  const diff = monday.getDate() - day + (day === 0 ? -6 : 1);
-  monday.setDate(diff);
+  // FIX: Korrekte Berechnung für Montag (Sonntag = 0 → Montag der Vorwoche)
+  const diff = day === 0 ? -6 : 1 - day;
+  monday.setDate(monday.getDate() + diff);
   const sunday = new Date(monday);
   sunday.setDate(monday.getDate() + 6);
 
-  const fmt = (d) => String(d.getDate()).padStart(2,'0') + '.' + String(d.getMonth()+1).padStart(2,'0');
+  const fmt = (d) => String(d.getDate()).padStart(2, '0') + '.' + String(d.getMonth() + 1).padStart(2, '0');
   document.getElementById('dateRange').textContent = `${fmt(monday)}-${fmt(sunday)}`;
   document.getElementById('monthBadge').textContent = `${MONTHS[today.getMonth()]} ${today.getFullYear()}`;
 }
 
 function renderSchedule() {
-  const html = state.days.map((d, i) => {
+  const html = state.days.map((d) => {
     const cls = d.sleep ? 'sleep' : 'active';
-    const content = d.sleep ? '☁️ 💤 💤 💤 ☁️' : (d.stream || 'KEIN STREAM');
-    const time = d.sleep ? '💤' : (d.time || '—');
+    // FIX: HTML-Sonderzeichen escapen um XSS zu verhindern
+    const content = d.sleep ? '☁️ 💤 💤 💤 ☁️' : escapeHtml(d.stream || 'KEIN STREAM');
+    const time = d.sleep ? '💤' : escapeHtml(d.time || '—');
     return `
       <div class="day-row">
         <div class="day-tag ${cls}">${d.name}</div>
@@ -982,15 +1020,16 @@ function renderDayEditors() {
       <div class="day-editor-title">${d.name}</div>
       <div class="form-group">
         <label>Stream / Spiel</label>
-        <input type="text" value="${d.stream}" onchange="updateDay(${i}, 'stream', this.value)">
+        <!-- FIX: escapeHtml für value-Attribute -->
+        <input type="text" value="${escapeAttr(d.stream)}" onchange="updateDay(${i}, 'stream', this.value)">
       </div>
       <div class="form-group">
         <label>Uhrzeit</label>
-        <input type="text" value="${d.time}" placeholder="15³⁰-23³⁰" onchange="updateDay(${i}, 'time', this.value)">
+        <input type="text" value="${escapeAttr(d.time)}" placeholder="15:00 - 23:00" onchange="updateDay(${i}, 'time', this.value)">
       </div>
       <div class="form-group">
-        <label>
-          <input type="checkbox" ${d.sleep ? 'checked' : ''} onchange="updateDay(${i}, 'sleep', this.checked)" style="width:auto;margin-right:8px;">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+          <input type="checkbox" ${d.sleep ? 'checked' : ''} onchange="updateDay(${i}, 'sleep', this.checked)" style="width:auto;">
           Schlaf / Frei
         </label>
       </div>
@@ -1002,18 +1041,30 @@ function renderDayEditors() {
 function updateDay(i, field, val) {
   state.days[i][field] = val;
   renderSchedule();
+  // FIX: Bei sleep-Änderung auch die Editoren neu rendern (damit Felder korrekt dargestellt werden)
+  if (field === 'sleep') {
+    renderDayEditors();
+  }
 }
 
 function updateTexts() {
   state.footerLeft = document.getElementById('footerLeftInput').value;
   state.footerRight = document.getElementById('footerRightInput').value;
-  document.getElementById('footerLeft').innerHTML = state.footerLeft.replace(/\n/g, '<br>');
-  document.getElementById('footerRight').innerHTML = state.footerRight.replace(/\n/g, '<br>');
+  document.getElementById('footerLeft').innerHTML = escapeHtml(state.footerLeft).replace(/\n/g, '<br>');
+  document.getElementById('footerRight').innerHTML = escapeHtml(state.footerRight).replace(/\n/g, '<br>');
 }
 
 function uploadBg(e) {
   const file = e.target.files[0];
   if (!file) return;
+
+  // FIX: Dateigrößen-Limit (5MB) um Server nicht zu überlasten
+  if (file.size > 5 * 1024 * 1024) {
+    alert('❌ Bild zu groß! Maximal 5MB erlaubt.');
+    e.target.value = '';
+    return;
+  }
+
   const reader = new FileReader();
   reader.onload = (ev) => {
     state.bgImage = ev.target.result;
@@ -1029,11 +1080,21 @@ function removeBg() {
   document.getElementById('bgCustom').style.backgroundImage = '';
   document.getElementById('bgCustom').classList.remove('active');
   document.getElementById('bgPreview').style.backgroundImage = '';
+  // FIX: Upload-Input zurücksetzen, damit dasselbe Bild nochmal hochgeladen werden kann
+  document.getElementById('bgUpload').value = '';
 }
 
 function uploadAvatar(e) {
   const file = e.target.files[0];
   if (!file) return;
+
+  // FIX: Dateigrößen-Limit (3MB)
+  if (file.size > 3 * 1024 * 1024) {
+    alert('❌ Avatar zu groß! Maximal 3MB erlaubt.');
+    e.target.value = '';
+    return;
+  }
+
   const reader = new FileReader();
   reader.onload = (ev) => {
     state.avatar = ev.target.result;
@@ -1045,6 +1106,74 @@ function uploadAvatar(e) {
 function togglePanel() {
   document.getElementById('panel').classList.toggle('open');
 }
+
+function clearAll() {
+  if (!confirm('💀💀💀 WARNUNG 💀💀💀\n\n🚨 DU BIST DABEI ALLES ZU VERNICHTEN! 🚨\n\n💥 Hintergrundbild → GELÖSCHT\n💥 Avatar → WEG\n💥 Alle Streams → AUSRADIERT\n💥 Alle Texte → VERNICHTET\n\n⚠️ ES GIBT KEIN ZURÜCK! ⚠️\n\nWillst du wirklich fortfahren?')) {
+    return;
+  }
+
+  if (!confirm('🔥 LETZTE WARNUNG! 🔥\n\nBist du dir ABSOLUT SICHER?\n\nDies ist deine letzte Chance!\n\nAlles wird UNWIDERRUFLICH gelöscht!')) {
+    return;
+  }
+
+  // State zurücksetzen
+  state = {
+    bgImage: '',
+    avatar: '',
+    footerLeft: 'Besucht JETZT auch meine\nanderen Social-Media-Konten!!',
+    footerRight: 'MIT LIEBE\nGEMACHT\nFÜR EUCH\nVON PLÜSCHI',
+    days: [
+      { name: 'MO', stream: '', time: '', sleep: true },
+      { name: 'DI', stream: '', time: '', sleep: true },
+      { name: 'MI', stream: '', time: '', sleep: true },
+      { name: 'DO', stream: '', time: '', sleep: false },
+      { name: 'FR', stream: '', time: '', sleep: false },
+      { name: 'SA', stream: '', time: '', sleep: false },
+      { name: 'SO', stream: '', time: '', sleep: true }
+    ]
+  };
+
+  // Visuals zurücksetzen
+  document.getElementById('bgCustom').style.backgroundImage = '';
+  document.getElementById('bgCustom').classList.remove('active');
+  document.getElementById('bgPreview').style.backgroundImage = '';
+  document.getElementById('bgUpload').value = '';
+  document.getElementById('avatarUpload').value = '';
+  document.getElementById('avatar').src = '';
+  document.getElementById('footerLeftInput').value = state.footerLeft.replace(/\n/g, ' ');
+  document.getElementById('footerRightInput').value = state.footerRight.replace(/\n/g, ' ');
+
+  // Neu rendern
+  updateTexts();
+  renderSchedule();
+  renderDayEditors();
+
+  // Auf Server speichern
+  saveToServer();
+
+  alert('💥💥💥 KABOOM! 💥💥💥\n\n🔥 Alles wurde vernichtet! 🔥\n\nDer Streamplan ist nun leer wie das Weltall! 🌌');
+}
+
+// HILFSFUNKTIONEN
+// FIX: XSS-Schutz - HTML-Zeichen escapen
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+// FIX: Für HTML-Attribute (value="...")
+function escapeAttr(str) {
+  if (!str) return '';
+  return String(str).replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
+// Beim Laden sofort Datum setzen (auch ohne Server)
+updateDateRange();
 </script>
 
 </body>
