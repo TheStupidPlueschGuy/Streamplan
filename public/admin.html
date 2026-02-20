@@ -783,11 +783,67 @@
     <div id="dayEditors"></div>
   </div>
 
+<div class="section danger-zone">
+    <div class="danger-warning">⚠️ ACHTUNG ⚠️</div>
+    <h3>💀 DANGER ZONE 💀</h3>
+    <div class="danger-text">Hier gibt es kein zurück!</div>
+    <button class="btn btn-danger" onclick="clearAll()">
+      <span class="btn-danger-icon">💥</span>
+      ALLES VERNICHTEN
+      <span class="btn-danger-icon">💥</span>
+    </button>
+  </div>
+
   <button class="btn btn-save" onclick="saveToServer()">💾 SPEICHERN</button>
   <div class="save-status" id="saveStatus"></div>
 </div>
-</div>
-
+  
+  function clearAll() {
+  console.log('clearAll function called!');
+  
+  if (!confirm('💀💀💀 WARNUNG 💀💀💀\n\n🚨 DU BIST DABEI ALLES ZU VERNICHTEN! 🚨\n\n💥 Hintergrundbild → GELÖSCHT\n💥 Avatar → WEG\n💥 Alle Streams → AUSRADIERT\n💥 Alle Texte → VERNICHTET\n\n⚠️ ES GIBT KEIN ZURÜCK! ⚠️\n\nWillst du wirklich fortfahren?')) {
+    return;
+  }
+  
+  if (!confirm('🔥 LETZTE WARNUNG! 🔥\n\nBist du dir ABSOLUT SICHER?\n\nDies ist deine letzte Chance!\n\nAlles wird UNWIDERRUFLICH gelöscht!')) {
+    return;
+  }
+  
+  // Reset state
+  state = {
+    bgImage: '',
+    avatar: '',
+    footerLeft: 'Besucht JETZT auch meine\nanderen Social-Media-Konten!!',
+    footerRight: 'MIT LIEBE\nGEMACHT\nFÜR EUCH\nVON PLÜSCHI',
+    days: [
+      { name: 'MO', stream: '', time: '', sleep: true },
+      { name: 'DI', stream: '', time: '', sleep: true },
+      { name: 'MI', stream: '', time: '', sleep: true },
+      { name: 'DO', stream: '', time: '', sleep: false },
+      { name: 'FR', stream: '', time: '', sleep: false },
+      { name: 'SA', stream: '', time: '', sleep: false },
+      { name: 'SO', stream: '', time: '', sleep: true }
+    ]
+  };
+  
+  // Clear visuals
+  document.getElementById('bgCustom').style.backgroundImage = '';
+  document.getElementById('bgCustom').classList.remove('active');
+  document.getElementById('bgPreview').style.backgroundImage = '';
+  document.getElementById('avatar').src = '';
+  document.getElementById('footerLeftInput').value = state.footerLeft.replace(/\n/g, ' ');
+  document.getElementById('footerRightInput').value = state.footerRight.replace(/\n/g, ' ');
+  
+  // Re-render
+  updateTexts();
+  renderSchedule();
+  renderDayEditors();
+  
+  // Save to server
+  saveToServer();
+  
+  alert('💥💥💥 KABOOM! 💥💥💥\n\n🔥 Alles wurde vernichtet! 🔥\n\nDer Streamplan ist nun leer wie das Weltall! 🌌');
+}
 <script>
 const API_URL = window.location.origin;
 let password = '';
