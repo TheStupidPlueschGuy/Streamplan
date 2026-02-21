@@ -26,13 +26,13 @@ async function initData() {
       footerLeft: 'Besucht JETZT auch meine\nanderen Social-Media-Konten!!',
       footerRight: 'MIT LIEBE\nGEMACHT\nFÜR EUCH\nVON PLÜSCHI',
       days: [
-        { name: 'MO', stream: '', time: '', sleep: true },
-        { name: 'DI', stream: '', time: '', sleep: true },
-        { name: 'MI', stream: '', time: '', sleep: true },
-        { name: 'DO', stream: 'DEAD AS DISCO', time: '15⁰⁰-21³⁰', sleep: false },
-        { name: 'FR', stream: 'MARIO KART 8', time: '15³⁰-23³⁰', sleep: false },
-        { name: 'SA', stream: 'EURO TRUCK SIMULATOR 2', time: '15³⁰-23³⁰', sleep: false },
-        { name: 'SO', stream: '', time: '', sleep: true }
+        { name: 'MO', stream: '', time: '', sleep: false },
+        { name: 'DI', stream: '', time: '', sleep: false },
+        { name: 'MI', stream: '', time: '', sleep: false },
+        { name: 'DO', stream: '', time: '', sleep: false },
+        { name: 'FR', stream: '', time: '', sleep: false },
+        { name: 'SA', stream: '', time: '', sleep: false },
+        { name: 'SO', stream: '', time: '', sleep: false }
       ]
     };
     await fs.writeFile(DATA_FILE, JSON.stringify(initialData, null, 2));
