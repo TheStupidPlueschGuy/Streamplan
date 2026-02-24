@@ -1,6 +1,10 @@
+import { createClient } from '@supabase/supabase-js';
+
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'KöniglichePlüschigkeit';
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_KEY;
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_KEY
+);
 
 const initialData = {
   bgImage: '',
@@ -18,66 +22,7 @@ const initialData = {
   ]
 };
 
-async function getData() {
-  try {
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/schedule?id=eq.1`, {
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`
-      }
-    });
-    
-    const data = await response.json();
-    
-    if (data && data.length > 0) {
-      return data[0].data;
-    }
-    
-    return initialData;
-  } catch (error) {
-    console.error('Error loading data:', error);
-    return initialData;
-  }
-}
-
-async function saveData(newData) {
-  try {
-    // First try to update
-    const updateResponse = await fetch(`${SUPABASE_URL}/rest/v1/schedule?id=eq.1`, {
-      method: 'PATCH',
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify({ data: newData })
-    });
-    
-    if (updateResponse.ok || updateResponse.status === 204) {
-      return true;
-    }
-    
-    // If update fails, try insert
-    const insertResponse = await fetch(`${SUPABASE_URL}/rest/v1/schedule`, {
-      method: 'POST',
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify({ id: 1, data: newData })
-    });
-    
-    return insertResponse.ok || insertResponse.status === 201;
-  } catch (error) {
-    console.error('Error saving data:', error);
-    return false;
-  }
-}
-
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -85,23 +30,35 @@ module.exports = async (req, res) => {
   if (req.method === 'OPTIONS') return res.status(200).end();
   
   if (req.method === 'GET') {
-    const data = await getData();
-    return res.json(data);
+    const { data, error } = await supabase
+      .from('schedule')
+      .select('data')
+      .eq('id', 1)
+      .single();
+    
+    if (error || !data) {
+      return res.json(initialData);
+    }
+    
+    return res.json(data.data);
   }
   
   if (req.method === 'POST') {
-    const { password, data } = req.body;
+    const { password, data: scheduleData } = req.body;
     
     if (password !== ADMIN_PASSWORD) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
     
-    const success = await saveData(data);
+    const { error } = await supabase
+      .from('schedule')
+      .upsert({ id: 1, data: scheduleData });
     
-    if (success) {
-      return res.json({ success: true });
-    } else {
+    if (error) {
+      console.error('Supabase error:', error);
       return res.status(500).json({ error: 'Failed to save' });
     }
+    
+    return res.json({ success: true });
   }
-};
+}
