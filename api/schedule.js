@@ -1,6 +1,6 @@
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'KöniglichePlüschigkeit';
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-const GITHUB_REPO = process.env.GITHUB_REPO;
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_KEY;
 
 const initialData = {
   bgImage: '',
@@ -18,58 +18,61 @@ const initialData = {
   ]
 };
 
-async function getDataFromGitHub() {
+async function getData() {
   try {
-    const response = await fetch(
-      `https://api.github.com/repos/${GITHUB_REPO}/contents/data.json`,
-      {
-        headers: {
-          'Authorization': `token ${GITHUB_TOKEN}`,
-          'Accept': 'application/vnd.github.v3+json'
-        }
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/schedule?id=eq.1`, {
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`
       }
-    );
+    });
     
-    if (response.ok) {
-      const file = await response.json();
-      const content = Buffer.from(file.content, 'base64').toString('utf8');
-      return { data: JSON.parse(content), sha: file.sha };
+    const data = await response.json();
+    
+    if (data && data.length > 0) {
+      return data[0].data;
     }
     
-    return { data: initialData, sha: null };
+    return initialData;
   } catch (error) {
-    console.error('Error reading from GitHub:', error);
-    return { data: initialData, sha: null };
+    console.error('Error loading data:', error);
+    return initialData;
   }
 }
 
-async function saveDataToGitHub(data, sha) {
+async function saveData(newData) {
   try {
-    const content = Buffer.from(JSON.stringify(data, null, 2)).toString('base64');
+    // First try to update
+    const updateResponse = await fetch(`${SUPABASE_URL}/rest/v1/schedule?id=eq.1`, {
+      method: 'PATCH',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({ data: newData })
+    });
     
-    const body = {
-      message: 'Update stream schedule',
-      content: content
-    };
+    if (updateResponse.ok || updateResponse.status === 204) {
+      return true;
+    }
     
-    if (sha) body.sha = sha;
+    // If update fails, try insert
+    const insertResponse = await fetch(`${SUPABASE_URL}/rest/v1/schedule`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({ id: 1, data: newData })
+    });
     
-    const response = await fetch(
-      `https://api.github.com/repos/${GITHUB_REPO}/contents/data.json`,
-      {
-        method: 'PUT',
-        headers: {
-          'Authorization': `token ${GITHUB_TOKEN}`,
-          'Accept': 'application/vnd.github.v3+json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(body)
-      }
-    );
-    
-    return response.ok;
+    return insertResponse.ok || insertResponse.status === 201;
   } catch (error) {
-    console.error('Error saving to GitHub:', error);
+    console.error('Error saving data:', error);
     return false;
   }
 }
@@ -82,7 +85,7 @@ module.exports = async (req, res) => {
   if (req.method === 'OPTIONS') return res.status(200).end();
   
   if (req.method === 'GET') {
-    const { data } = await getDataFromGitHub();
+    const data = await getData();
     return res.json(data);
   }
   
@@ -93,8 +96,7 @@ module.exports = async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
     
-    const { sha } = await getDataFromGitHub();
-    const success = await saveDataToGitHub(data, sha);
+    const success = await saveData(data);
     
     if (success) {
       return res.json({ success: true });
